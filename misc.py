@@ -110,7 +110,7 @@ def get_bl(beamval, el):
 
 ################################################################################################################
 
-def get_nl(noiseval, el, beamval, use_beam_window = 1, uk_to_K = 0, elknee_t = -1, alpha_knee = 0):
+def get_nl(noiseval, el, beamval, use_beam_window = 1, uk_to_K = 0, elknee = -1, alphaknee = 0):
 
     if uk_to_K: noiseval = noiseval/1e6
 
@@ -127,8 +127,8 @@ def get_nl(noiseval, el, beamval, use_beam_window = 1, uk_to_K = 0, elknee_t = -
 
     if use_beam_window: nl *= bl
 
-    if elknee_t != -1.:
-        nl = np.copy(nl) * (1. + (elknee_t * 1./el)**alpha_knee )
+    if elknee != -1.:
+        nl = np.copy(nl) * (1. + (elknee * 1./el)**alphaknee )
 
     return nl
 
