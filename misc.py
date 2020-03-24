@@ -110,26 +110,44 @@ def get_bl(beamval, el):
 
 ################################################################################################################
 
-def get_nl(noiseval, el, beamval, use_beam_window = 1, uk_to_K = 0, elknee = -1, alphaknee = 0):
+def get_nl(noiseval, el, beamval, use_beam_window = 1, uk_to_K = 0, elknee = -1, alphaknee = 0, beamval2 = None, noiseval2 = None, elknee2 = -1, alphaknee2 = 0, rho = None):
 
-    if uk_to_K: noiseval = noiseval/1e6
+    cross_band_noise = 0
+    if noiseval2 is not None and beamval2 is not None:
+        assert rho is not None
+        cross_band_noise = 1
+
+    if uk_to_K: 
+        noiseval = noiseval/1e6
+        if cross_band_noise: noiseval2 = noiseval2/1e6
 
     if use_beam_window:
-        fwhm_radians = np.radians(beamval/60.)
-        sigma = fwhm_radians / np.sqrt(8. * np.log(2.))
-        sigma2 = sigma ** 2
-        bl = np.exp(el * (el+1) * sigma2)
+        bl = get_bl(beamval, el)
+        if cross_band_noise: bl2 = get_bl(beamval2, el)
 
     delta_T_radians = noiseval * np.radians(1./60.)
     nl = np.tile(delta_T_radians**2., int(max(el)) + 1 )
-
     nl = np.asarray( [nl[int(l)] for l in el] )
 
-    if use_beam_window: nl *= bl
+    if cross_band_noise:
+        delta_T2_radians = noiseval2 * np.radians(1./60.)
+        nl2 = np.tile(delta_T2_radians**2., int(max(el)) + 1 )
+        nl2 = np.asarray( [nl2[int(l)] for l in el] )
+
+    if use_beam_window: 
+        nl *= bl
+        if cross_band_noise: nl2 *= bl2
 
     if elknee != -1.:
         nl = np.copy(nl) * (1. + (elknee * 1./el)**alphaknee )
+        if cross_band_noise and elknee2 != -1.:
+            nl2 = np.copy(nl2) * (1. + (elknee2 * 1./el)**alphaknee2 )
 
-    return nl
+    if cross_band_noise:
+        final_nl = rho * nl**0.5 * nl2**0.5
+    else:
+        final_nl = np.copy(nl)
+
+    return final_nl
 
 ################################################################################################################
