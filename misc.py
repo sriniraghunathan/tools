@@ -104,7 +104,7 @@ def get_bl(beamval, el):
     fwhm_radians = np.radians(beamval/60.)
     sigma = fwhm_radians / np.sqrt(8. * np.log(2.))
     sigma2 = sigma ** 2
-    bl = np.exp(el * (el+1) * sigma2)
+    bl = np.exp(0.5 * el * (el+1) * sigma2)
 
     return bl
 
@@ -150,4 +150,10 @@ def get_nl(noiseval, el, beamval, use_beam_window = 1, uk_to_K = 0, elknee = -1,
 
     return final_nl
 
+################################################################################################################
+def get_delta_cl(el, cl, nl, fsky = 1., delta_l = 1.):
+
+    delta_cl = np.sqrt(2./ (2.*el + 1) / fsky / delta_l) * (cl)## + nl)
+
+    return delta_cl
 ################################################################################################################
